@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: crm_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: ./crm_project
+      dockerfile: Dockerfile
+    command: gunicorn crm_project.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./crm_project:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  flutter-web:
+    build:
+      context: ./crm_flutter
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
